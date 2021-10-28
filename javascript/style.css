@@ -1,7 +1,7 @@
 
 .cart-button{
-    width: 170px;
-    min-height: 50px;
+    width: 100px;
+    min-height: 35px;
     display: inline-block;
     text-decoration: none;
     letter-spacing: 1px;
@@ -9,7 +9,7 @@
     word-break: break-all;
     text-transform: uppercase;
     border-bottom: 3px solid #736357;
-    transition: 0.4s ease-in-out;
+    transition: 0.2s ease-in-out;
     border-radius: 10px;
     background-color: #998675;
     font-family: "Raleway";
@@ -20,4 +20,48 @@
 .cart-button:hover {
     box-shadow: inset 0 -60px 0 white, 2px 2px 3px rgba(0, 0, 0, 0.3);
    color:#998675;
+}
+.search-button{
+    width: 100px;
+    min-height: 35px;
+    display: inline-block;
+    text-decoration: none;
+    letter-spacing: 1px;
+    border: none;
+    word-break: break-all;
+    text-transform: uppercase;
+    border-bottom: 3px solid #736357;
+    transition: 0.2s ease-in-out;
+    border-radius: 10px;
+    background-color: #998675;
+    font-family: "Raleway";
+    color: rgb(255, 255, 255);
+    font-weight: bold;
+}
+.search-button:hover {
+    box-shadow: inset 0 -60px 0 white, 2px 2px 3px rgba(0, 0, 0, 0.3);
+   color:#998675;
+}
+
+.cart{
+    
+    width:450px;
+    height:300px;
+    background-color:#998675;
+    border: 3px solid #736357;
+    position:fixed;
+    top: 100px;
+    display:none;
+    right: calc(50% -150px);
+}
+.active{
+    display:flex;
+}
+.goods-item{
+    width: 80px;
+    height: 100px;
+    background-color: #888;
+    border-radius:5px ;
+    padding: 10px;
+    margin: 20px;
 }

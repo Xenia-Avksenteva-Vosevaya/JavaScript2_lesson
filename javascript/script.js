@@ -1,110 +1,154 @@
+const API_URL = 'https://raw.githubusercontent.com/GeekBrainsTutorial/online-store-api/master/responses/'
+
+function send(onError, onSuccess, url, method = 'GET', data = null, headers = [], timeout = 15000) {
+  let xhr;
+
+  if (window.XMLHttpRequest) {
+      // Chrome, Mozilla, Opera, Safari
+      xhr = new XMLHttpRequest();
+  }  else if (window.ActiveXObject) { 
+      // Internet Explorer
+      xhr = new ActiveXObject("Microsoft.XMLHTTP");
+  }
+
+  xhr.open(method, url, true);
 
 
-// const goods = [
-//     {title: 'Shirt' , price: '150'},
-//     {title: 'Socks' , price: '50'},
-//     {title: 'Jacket' , price: '350'},
-//     {title: 'Shoes' , price: '250'},
-// ];
+  headers.forEach((header) => {
+      xhr.setRequestHeader(header.key, header.value);
+  })
+  
 
-// const $goodsList = document.querySelector('.goods-list');
+  xhr.timeout = timeout;
 
-//  const renderGoodsItems=({title, price}) => {
-//      return `<div class="goods-item"><h3>${title}</h3><p>${price}</p></div>`;
-//  };
+  xhr.onreadystatechange = function () {
+      if (xhr.readyState === 4) {
+      if(xhr.status >= 400) {
+          onError(xhr.statusText)
+      } else {
+          onSuccess(xhr.responseText)
+      }
+      }
+  }
 
-//  const renderGoodsList = (list = goods) => {
-//   let goodsList = list.map(
-//   (item) => {
-//        return renderGoodsItems(item)
-//   }
-//   ).join(' ');
-
-//   $goodsList.insertAdjacentHTML("beforeend", goodsList);
-//  };
-
-//  renderGoodsList();
-
-
-/**Задание на урок 2 */
-
-class GoodsItem{
- constructor(title,price){
-     this.title = title;
-     this.price = price;
- }
- render() {
-    return `<div class="goods-item"><h3>${this.title}</h3><p>${this.price}</p></div>`;
- }
+  xhr.send(data);
 }
 
+ class GoodsItem{
+    constructor(title,price,id){
+        this.title = title;
+        this.price = price;
+        this.id = id;
+    }
+
+    render() {
+       return `<div class="goods-item"><h3>${this.title}</h3><p>${this.price}</p></div>`;
+    }
+ }
+
+
 class GoodsList{
-     constructor(goods) {
+    constructor(cart) {
      this.goods = [];
-     
+     this._cart = cart;
+     this._el =  document.querySelector('.goods-list');
+     this._el.addEventListener('click',this._onClick.bind(this));
     }
    
      fetchGoods() { 
-        this.goods = [
-            {title: 'Shirt' , price: '150'},
-            {title: 'Socks' , price: '50'},
-            {title: 'Jacket' , price: '350'},
-            {title: 'Shoes' , price: '250'},
-           ];
+        fetch(`${API_URL}catalogData.json`)
+        .then((response) => {
+          return response.json();
+        })
+        .then((request) => {
+          this.goods = request.map(good => ({title: good.product_name, price: good.price,id: good.id_product}))
+          this.render();
+        })
+        .catch((err) => { 
+          console.log(err.text)
+        })
         }
+
+    _onClick(e) {
+    const id = e.target.getAttribute('data-id')
+    if(id) {
+        fetch(`${API_URL}addToBasket.json`)
+        .then(() =>{
+        this._cart.add(this.goods.find((good) => good.id === id))
+        })
+    }
+    }
+
      render () { 
          let listHtml = '';
          this.goods.forEach(good =>{
-             const goodItem = new GoodsItem(good.title, good.price);
+             const goodItem = new GoodsItem(good.title, good.price,good.id);
+             console.log(goodItem)
              listHtml += goodItem.render();
          });
-         document.querySelector('.goods-list').innerHTML = listHtml;
-        }
-
-      /**Первый вариант (можете сказать где ошибка?) 
-       * Я пыталась попасть через метод fetchGoods ведь там находится массив this.goods 
-       * и его перебрать или надо было это делать через метод GoodsList?
-       */
-
-        result() {
-            function sumGoodsList(fetchGoods){
-                let sum = 0;
-                for(let goods of Object.values(goods)) {
-                    sum += goods;
-                }
-                return sum;
-            }
-        }
-        
-     /**Второй вариант (можете сказать где ошибка?)
-     * 
-     * 
-     */
-     //  goodsSum (GoodsList) {
-     //     let result = this.goods.reduce(function( price ){
-     //         return price + price;
-     //     },0);
-     //  }
-      /**Третий вариант(тоже выдаёт ошибку)
-       * 
-       */
-     // sumGoodsList(fetchGoods) {
-     //     return Object.values(fetchGoods).reduce((price) => price + price, 0);
-     // }
-    
+         this._el.innerHTML = listHtml;
+    }
+}
+class CartItem extends GoodsItem{
+    constructor(title,price,id){
+        super(title,price,id);
+    }
 }
 
-//  class bascet{
-//     constructor();
-// }
-//  class addedGoods{
-//      constructor();
-//  }
+ class Cart{
+    constructor(){
+        this._list = [];
+        this.btn = document.querySelector('.cart-button')
+        this.el =document.querySelector('.cart')
+        this.btn.addEventListener('click', this._onToggleCart.bind(this))
+        this._el.addEventListener('click', this._onClick.bind(this))
+    }
+   add(good){
+       this._list.push(good);
+       this.render()
+   }
+ 
+   _onClick(e){
+    const id = e.target.getAttribute('data-id')
+  fetch(`${API_URL}deletFromBasket.json `)
+  .then(() =>{
+      const index = this._list.findIndex((good) => good.id === id )
+    this.list.splice(index, 1)
+    this.render()
+  })
+   }
 
+    _onToggleCart(){
+    this.el.classList.toggle('active');
+    }
 
- const list = new GoodsList();
+    render(){
+        let listHtml = '';
+         this._list.forEach(good =>{
+             const goodItem = new CartItem(good.title, good.price,good.id);
+             console.log(goodItem)
+             listHtml += goodItem.render();
+         });
+         this._el.innerHTML = listHtml;
+    }
+       
+    load() {
+        fetch(`${API_URL}getBasket.json`)
+        .then((response) => {
+           return response.json()
+        })
+        .then((goods) =>{
+        this._list = goods.contents.map(good => ({title: good.product_name, price: good.price,  id: good.id_product}))
+        this.render ()
+        })
+    }
+}
+
+ 
+ const cart = new Cart();
+ const list = new GoodsList(cart);
  list.fetchGoods();
- list.render();
-//  console.log(GoodsItem.goodsSum);
- console.log(GoodsItem.result);
+ cart.load();
+
+
 
